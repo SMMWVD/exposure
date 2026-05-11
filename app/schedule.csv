@@ -1,0 +1,10 @@
+id,date,start,end,title,student,location,capacity,description
+demo-opening,2026-05-11,17:30,18:00,Opening performance,Alex de Vries,Studio 1,24,Korte live performance met geluid en projectie
+demo-soft-systems,2026-05-11,18:15,18:50,Soft Systems,Mina Janssen,Black Box,18,Installatie performance met publiek
+demo-between-rooms,2026-05-11,18:45,19:20,Between Two Rooms,Noor Bakker,Studio 2,16,Bewegingsperformance
+demo-listening-table,2026-05-11,19:00,19:30,Listening Table,Samira El Amrani,Atelier 4,8,Participatieve performance
+demo-threshold-choir,2026-05-11,19:35,20:05,Threshold Choir,Jonas Smit,Aula,60,Stem en ruimte
+demo-future-body,2026-05-11,20:15,20:55,Manual for a Future Body,Lina Verhoeven,Studio 1,20,Performance met objecten
+demo-reading-floor,2026-05-11,20:35,21:05,Reading the Floor,Iris Visser,Black Box,18,Dans en tekst
+demo-closing-loop,2026-05-11,21:15,22:00,Closing Loop,Daan Meijer,Aula,60,Doorlopende eindperformance
+demo-late-table,2026-05-11,22:10,22:35,Night Table,Ravi Koeman,Atelier 4,10,Kleine publieksperformance

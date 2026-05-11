@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Afstudeer Expo Performances</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="board">
+      <header class="topbar">
+        <div class="brand-block">
+          <img class="hku-logo" src="./hku-logo.svg" alt="HKU" />
+          <div>
+          <p class="kicker">Afstudeer Expo</p>
+          <h1>Performances</h1>
+          </div>
+        </div>
+        <div class="clock" aria-live="polite">
+          <span id="today">--</span>
+          <strong id="now">--:--</strong>
+        </div>
+      </header>
+
+      <section class="timeline-wrap" aria-label="Blokkenschema">
+        <div id="timeline" class="timeline"></div>
+      </section>
+
+    </main>
+
+    <dialog id="signupDialog" class="kiosk-dialog">
+      <form id="boardSignupForm" class="kiosk-card">
+        <button class="dialog-close" type="button" aria-label="Sluiten">×</button>
+        <p class="section-label">Inschrijven</p>
+        <h2 id="dialogTitle" class="dialog-title">Performance</h2>
+        <div id="dialogMeta" class="dialog-meta"></div>
+
+        <label>
+          Naam
+          <input name="name" type="text" maxlength="80" autocomplete="name" required />
+        </label>
+
+        <label>
+          E-mail
+          <input name="email" type="email" maxlength="120" autocomplete="email" />
+        </label>
+
+        <input name="eventId" type="hidden" />
+        <button id="dialogSubmit" class="submit-button" type="submit">Inschrijven</button>
+        <p id="dialogStatus" class="form-status" role="status"></p>
+      </form>
+    </dialog>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inschrijven voor performance</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="form-page">
+    <main class="form-shell">
+      <header class="form-header">
+        <p class="kicker">Afstudeer Expo</p>
+        <h1>Publiek inschrijven</h1>
+      </header>
+
+      <form id="signupForm" class="event-form">
+        <label>
+          Performance
+          <select name="eventId" required></select>
+        </label>
+
+        <label>
+          Naam
+          <input name="name" type="text" maxlength="80" autocomplete="name" required />
+        </label>
+
+        <label>
+          E-mail
+          <input name="email" type="email" maxlength="120" autocomplete="email" />
+        </label>
+
+        <button class="submit-button" type="submit">Inschrijven</button>
+        <p id="signupStatus" class="form-status" role="status"></p>
+      </form>
+
+      <section id="signupList" class="signup-list" aria-label="Beschikbare performances"></section>
+    </main>
+
+    <script src="./signup.js" type="module"></script>
+  </body>
+</html>

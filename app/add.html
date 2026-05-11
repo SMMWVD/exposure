@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Performance toevoegen</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="form-page">
+    <main class="form-shell">
+      <header class="form-header">
+        <p class="kicker">Afstudeer Expo</p>
+        <h1>Performance toevoegen</h1>
+      </header>
+
+      <form id="eventForm" class="event-form">
+        <label>
+          Datum
+          <input name="date" type="date" required />
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Start
+            <input name="start" type="time" required />
+          </label>
+          <label>
+            Eind
+            <input name="end" type="time" required />
+          </label>
+        </div>
+
+        <label>
+          Titel
+          <input name="title" type="text" maxlength="80" autocomplete="off" required />
+        </label>
+
+        <label>
+          Naam student
+          <input name="student" type="text" maxlength="80" autocomplete="name" required />
+        </label>
+
+        <label>
+          Locatie
+          <input name="location" type="text" maxlength="60" autocomplete="off" required />
+        </label>
+
+        <label>
+          Publieksplekken
+          <input name="capacity" type="number" min="1" max="999" inputmode="numeric" required />
+        </label>
+
+        <label>
+          Korte beschrijving
+          <textarea name="description" maxlength="160" rows="3"></textarea>
+        </label>
+
+        <button class="submit-button" type="submit">Toevoegen</button>
+        <p id="formStatus" class="form-status" role="status"></p>
+        <div id="manageResult" class="result-panel" hidden></div>
+      </form>
+    </main>
+
+    <script src="./add.js" type="module"></script>
+  </body>
+</html>
