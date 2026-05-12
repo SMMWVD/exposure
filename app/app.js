@@ -1,6 +1,6 @@
 const eventsUrl = "/api/events";
 const scheduleUrl = "./schedule.csv";
-const refreshMs = 30_000;
+const refreshMs = 10_000;
 
 let events = [];
 

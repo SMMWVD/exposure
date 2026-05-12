@@ -10,10 +10,15 @@
     <main class="form-shell">
       <header class="form-header">
         <p class="kicker">Afstudeer Expo</p>
-        <h1>Performance toevoegen</h1>
+        <h1>Mijn performances</h1>
       </header>
 
       <form id="eventForm" class="event-form">
+        <label>
+          Jouw naam
+          <input name="student" type="text" maxlength="80" autocomplete="name" required />
+        </label>
+
         <label>
           Datum
           <input name="date" type="date" required />
@@ -21,23 +26,18 @@
 
         <div class="form-grid">
           <label>
-            Start
-            <input name="start" type="time" required />
+            Starttijd
+            <input name="start" type="text" inputmode="numeric" placeholder="14:00" pattern="[0-2][0-9]:[0-5][0-9]" required />
           </label>
           <label>
-            Eind
-            <input name="end" type="time" required />
+            Eindtijd
+            <input name="end" type="text" inputmode="numeric" placeholder="14:30" pattern="[0-2][0-9]:[0-5][0-9]" required />
           </label>
         </div>
 
         <label>
           Titel
           <input name="title" type="text" maxlength="80" autocomplete="off" required />
-        </label>
-
-        <label>
-          Naam student
-          <input name="student" type="text" maxlength="80" autocomplete="name" required />
         </label>
 
         <label>
@@ -55,10 +55,43 @@
           <textarea name="description" maxlength="160" rows="3"></textarea>
         </label>
 
+        <fieldset class="repeat-panel">
+          <label class="check-row">
+            <input name="repeat" type="checkbox" value="yes" />
+            Herhaaldelijk toevoegen
+          </label>
+
+          <div class="form-grid">
+            <label>
+              Aantal keer
+              <input name="repeatCount" type="number" min="1" max="24" value="1" inputmode="numeric" />
+            </label>
+            <label>
+              Iedere
+              <select name="repeatInterval">
+                <option value="15">15 minuten</option>
+                <option value="30">30 minuten</option>
+                <option value="45">45 minuten</option>
+                <option value="60">1 uur</option>
+                <option value="90">1,5 uur</option>
+                <option value="120">2 uur</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
         <button class="submit-button" type="submit">Toevoegen</button>
         <p id="formStatus" class="form-status" role="status"></p>
         <div id="manageResult" class="result-panel" hidden></div>
       </form>
+
+      <section class="event-form manage-section" aria-label="Eigen performances beheren">
+        <div class="section-row">
+          <h2>Jouw lijst</h2>
+          <button id="refreshMine" class="secondary-button" type="button">Ververs</button>
+        </div>
+        <div id="myEvents" class="manage-list"></div>
+      </section>
     </main>
 
     <script src="./add.js" type="module"></script>

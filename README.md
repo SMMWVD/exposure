@@ -62,7 +62,7 @@ Voor een expo-scherm kun je de browser fullscreen zetten. Touch werkt al voor de
 - Laat studenten de invulpagina gebruiken, of bewerk `schedule.csv` handmatig.
 - Gebruik korte titels voor betere leesbaarheid op afstand.
 - Deel de invullink alleen met deelnemers. Iedereen op hetzelfde netwerk die de link heeft kan toevoegen.
-- Na toevoegen krijgt een student een beheerlink. Met die link kan alleen die performance worden verwijderd.
+- Studenten beheren hun performances door op de toevoegpagina dezelfde naam in te vullen.
 - Inschrijvingen worden opgeslagen in `data/signups.json`.
 
 ## Publiek beschikbaar maken

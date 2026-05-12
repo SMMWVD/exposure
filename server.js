@@ -109,6 +109,17 @@ function isValidTime(value) {
   return /^\d{2}:\d{2}$/.test(value);
 }
 
+function timeToMinutes(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToTime(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
 function makeId() {
   return `${Date.now().toString(36)}-${crypto.randomBytes(3).toString("hex")}`;
 }
@@ -245,13 +256,31 @@ async function insertSupabaseEvent(event, manageCode) {
   return publicEvent(rows[0]);
 }
 
-async function deleteSupabaseEvent(id, code) {
+async function insertSupabaseEvents(eventsWithCodes) {
+  const rows = await supabaseRequest("performances", {
+    method: "POST",
+    prefer: "return=representation",
+    body: eventsWithCodes.map(({ event, manageCode }) => ({
+      ...event,
+      manage_code: manageCode,
+    })),
+  });
+
+  return rows.map(publicEvent);
+}
+
+async function deleteSupabaseEvent(id, code, student) {
   const rows = await supabaseRequest(
-    `performances?select=id,manage_code&id=eq.${encodeURIComponent(id)}&limit=1`,
+    `performances?select=id,manage_code,student&id=eq.${encodeURIComponent(id)}&limit=1`,
   );
 
   if (!rows.length) return { status: 404, error: "Performance niet gevonden." };
-  if (rows[0].manage_code !== code) return { status: 403, error: "Deze verwijderlink klopt niet." };
+  const canDeleteWithCode = code && rows[0].manage_code === code;
+  const canDeleteWithStudent = student && rows[0].student.trim().toLowerCase() === student.trim().toLowerCase();
+
+  if (!canDeleteWithCode && !canDeleteWithStudent) {
+    return { status: 403, error: "Deze performance staat niet op jouw naam." };
+  }
 
   await supabaseRequest(`performances?id=eq.${encodeURIComponent(id)}`, {
     method: "DELETE",
@@ -302,9 +331,17 @@ async function getEventsWithSignupCounts() {
   });
 }
 
-async function listEvents(_req, res) {
+async function listEvents(req, res) {
   try {
-    sendJson(res, 200, { events: await getEventsWithSignupCounts() });
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const student = (url.searchParams.get("student") || "").trim().toLowerCase();
+    let listedEvents = await getEventsWithSignupCounts();
+
+    if (student) {
+      listedEvents = listedEvents.filter((event) => event.student.trim().toLowerCase() === student);
+    }
+
+    sendJson(res, 200, { events: listedEvents });
   } catch (error) {
     console.error(error);
     sendJson(res, 500, { error: "Schema laden is niet gelukt." });
@@ -314,51 +351,76 @@ async function listEvents(_req, res) {
 async function addEvent(req, res) {
   try {
     const input = JSON.parse(await readBody(req));
-    const event = Object.fromEntries(headers.map((header) => [header, String(input[header] ?? "").trim()]));
-    event.id = makeId();
-    event.capacity = Math.max(0, Number.parseInt(event.capacity || "0", 10) || 0);
+    const baseEvent = Object.fromEntries(headers.map((header) => [header, String(input[header] ?? "").trim()]));
+    baseEvent.capacity = Math.max(0, Number.parseInt(baseEvent.capacity || "0", 10) || 0);
 
-    if (!isValidDate(event.date) || !isValidTime(event.start) || !isValidTime(event.end)) {
+    if (!isValidDate(baseEvent.date) || !isValidTime(baseEvent.start) || !isValidTime(baseEvent.end)) {
       sendJson(res, 400, { error: "Vul een geldige datum, starttijd en eindtijd in." });
       return;
     }
 
-    if (!event.title || !event.student || !event.location) {
+    if (!baseEvent.title || !baseEvent.student || !baseEvent.location) {
       sendJson(res, 400, { error: "Titel, student en locatie zijn verplicht." });
       return;
     }
 
-    if (event.capacity < 1) {
+    if (baseEvent.capacity < 1) {
       sendJson(res, 400, { error: "Publieksplekken moet minimaal 1 zijn." });
       return;
     }
 
-    if (event.end <= event.start) {
+    const startMinutes = timeToMinutes(baseEvent.start);
+    const endMinutes = timeToMinutes(baseEvent.end);
+
+    if (endMinutes <= startMinutes) {
       sendJson(res, 400, { error: "De eindtijd moet later zijn dan de starttijd." });
       return;
     }
 
-    const manageCode = makeCode();
+    const repeatEnabled = input.repeat === "yes";
+    const repeatCount = repeatEnabled ? Math.max(1, Math.min(24, Number.parseInt(input.repeatCount || "1", 10) || 1)) : 1;
+    const repeatInterval = Math.max(15, Number.parseInt(input.repeatInterval || "60", 10) || 60);
+    const duration = endMinutes - startMinutes;
+    const eventsToSave = [];
+
+    for (let index = 0; index < repeatCount; index += 1) {
+      const nextStart = startMinutes + index * repeatInterval;
+      const nextEnd = nextStart + duration;
+      if (nextEnd > 24 * 60) {
+        sendJson(res, 400, { error: "Een herhaling eindigt na middernacht. Kies minder herhalingen of een kortere interval." });
+        return;
+      }
+
+      eventsToSave.push({
+        ...baseEvent,
+        id: makeId(),
+        start: minutesToTime(nextStart),
+        end: minutesToTime(nextEnd),
+      });
+    }
 
     if (useSupabase) {
-      const savedEvent = await insertSupabaseEvent(event, manageCode);
+      const eventsWithCodes = eventsToSave.map((event) => ({ event, manageCode: makeCode() }));
+      const savedEvents = await insertSupabaseEvents(eventsWithCodes);
       sendJson(res, 201, {
         ok: true,
-        event: savedEvent,
-        manageUrl: `/manage.html?id=${encodeURIComponent(savedEvent.id)}&code=${encodeURIComponent(manageCode)}`,
+        event: savedEvents[0],
+        events: savedEvents,
       });
       return;
     }
 
     const [events, codes] = await Promise.all([readEvents(), readJsonFile(codesPath, {})]);
-    events.push(event);
-    codes[event.id] = manageCode;
+    eventsToSave.forEach((event) => {
+      events.push(event);
+      codes[event.id] = makeCode();
+    });
     await Promise.all([writeEvents(events), writeJsonFile(codesPath, codes)]);
 
     sendJson(res, 201, {
       ok: true,
-      event,
-      manageUrl: `/manage.html?id=${encodeURIComponent(event.id)}&code=${encodeURIComponent(manageCode)}`,
+      event: eventsToSave[0],
+      events: eventsToSave,
     });
   } catch (error) {
     console.error(error);
@@ -366,10 +428,10 @@ async function addEvent(req, res) {
   }
 }
 
-async function deleteEvent(req, res, id, code) {
+async function deleteEvent(req, res, id, code, student) {
   try {
     if (useSupabase) {
-      const result = await deleteSupabaseEvent(id, code);
+      const result = await deleteSupabaseEvent(id, code, student);
       if (!result.ok) {
         sendJson(res, result.status, { error: result.error });
         return;
@@ -384,8 +446,13 @@ async function deleteEvent(req, res, id, code) {
       readJsonFile(signupsPath, {}),
     ]);
 
-    if (!codes[id] || codes[id] !== code) {
-      sendJson(res, 403, { error: "Deze verwijderlink klopt niet." });
+    const eventToDelete = events.find((event) => event.id === id);
+    const canDeleteWithCode = code && codes[id] === code;
+    const canDeleteWithStudent =
+      student && eventToDelete?.student.trim().toLowerCase() === student.trim().toLowerCase();
+
+    if (!canDeleteWithCode && !canDeleteWithStudent) {
+      sendJson(res, 403, { error: "Deze performance staat niet op jouw naam." });
       return;
     }
 
@@ -506,7 +573,13 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === "DELETE" && url.pathname.startsWith("/api/events/")) {
-    deleteEvent(req, res, decodeURIComponent(url.pathname.replace("/api/events/", "")), url.searchParams.get("code") || "");
+    deleteEvent(
+      req,
+      res,
+      decodeURIComponent(url.pathname.replace("/api/events/", "")),
+      url.searchParams.get("code") || "",
+      url.searchParams.get("student") || "",
+    );
     return;
   }
 
