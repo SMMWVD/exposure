@@ -152,8 +152,8 @@ function renderTimeline(now, visibleEvents, currentEvent, nextEvent) {
   const majorSlotMinutes = 30;
   const range = getScheduleRange(visibleEvents);
   const slotCount = Math.max(1, Math.ceil((range.end - range.start) / slotMinutes));
-  const locations = [...new Set(visibleEvents.map((event) => event.location || "Locatie"))];
-  const stageLabelWidth = 154;
+  const performanceRows = [...new Set(visibleEvents.map((event) => event.title || "Performance"))];
+  const stageLabelWidth = 220;
   const gridTemplateColumns = `${stageLabelWidth}px repeat(${slotCount}, minmax(46px, 1fr))`;
   const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   const nowPercent = ((nowMinutes - range.start) / (range.end - range.start)) * 100;
@@ -165,7 +165,7 @@ function renderTimeline(now, visibleEvents, currentEvent, nextEvent) {
 
   const corner = document.createElement("div");
   corner.className = "time-corner";
-  corner.textContent = "Locatie";
+  corner.textContent = "Performance";
   elements.timeline.append(corner);
 
   for (let minute = range.start; minute < range.end; minute += slotMinutes) {
@@ -176,11 +176,11 @@ function renderTimeline(now, visibleEvents, currentEvent, nextEvent) {
     elements.timeline.append(cell);
   }
 
-  locations.forEach((location) => {
-    const rowEvents = visibleEvents.filter((event) => (event.location || "Locatie") === location);
+  performanceRows.forEach((title) => {
+    const rowEvents = visibleEvents.filter((event) => (event.title || "Performance") === title);
     const label = document.createElement("div");
     label.className = "stage-label";
-    label.textContent = location;
+    label.textContent = title;
     elements.timeline.append(label);
 
     const row = document.createElement("div");
@@ -202,7 +202,7 @@ function renderTimeline(now, visibleEvents, currentEvent, nextEvent) {
       article.setAttribute("role", event.capacity && !event.isFull ? "button" : "article");
       article.setAttribute("aria-label", `${event.title}, ${signupLabel(event)}`);
       article.innerHTML = `
-        <strong>${escapeHtml(event.title)}</strong>
+        <strong>${escapeHtml(event.location)}</strong>
         <span>${escapeHtml(event.start)}-${escapeHtml(event.end)}</span>
         <span>${event.isFull ? "vol" : event.capacity ? escapeHtml(spotsLabel(event.available)) : escapeHtml(event.student)}</span>
       `;

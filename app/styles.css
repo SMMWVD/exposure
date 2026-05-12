@@ -244,10 +244,13 @@ h1 {
 
 .stage-label {
   min-height: 72px;
-  padding: 10px;
+  padding: 10px 14px;
   border-right: 1px solid rgba(255, 253, 248, 0.12);
   border-bottom: 1px solid rgba(255, 253, 248, 0.12);
-  font-size: clamp(15px, 1.6vw, 22px);
+  font-size: clamp(14px, 1.35vw, 20px);
+  line-height: 1.05;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .stage-row {
@@ -298,6 +301,7 @@ h1 {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .event-block strong {
