@@ -122,6 +122,10 @@ function minutesToTime(totalMinutes) {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
+function performanceKey(event) {
+  return (event.title || "Performance").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 function getScheduleRange(visibleEvents) {
   if (!visibleEvents.length) return { start: 9 * 60, end: 18 * 60 };
 
@@ -152,7 +156,17 @@ function renderTimeline(now, visibleEvents, currentEvent, nextEvent) {
   const majorSlotMinutes = 30;
   const range = getScheduleRange(visibleEvents);
   const slotCount = Math.max(1, Math.ceil((range.end - range.start) / slotMinutes));
-  const performanceRows = [...new Set(visibleEvents.map((event) => event.title || "Performance"))];
+  const performanceRows = [
+    ...new Map(
+      visibleEvents.map((event) => [
+        performanceKey(event),
+        {
+          key: performanceKey(event),
+          title: (event.title || "Performance").trim() || "Performance",
+        },
+      ]),
+    ).values(),
+  ];
   const stageLabelWidth = 220;
   const gridTemplateColumns = `${stageLabelWidth}px repeat(${slotCount}, minmax(46px, 1fr))`;
   const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
@@ -176,11 +190,11 @@ function renderTimeline(now, visibleEvents, currentEvent, nextEvent) {
     elements.timeline.append(cell);
   }
 
-  performanceRows.forEach((title) => {
-    const rowEvents = visibleEvents.filter((event) => (event.title || "Performance") === title);
+  performanceRows.forEach((performance) => {
+    const rowEvents = visibleEvents.filter((event) => performanceKey(event) === performance.key);
     const label = document.createElement("div");
     label.className = "stage-label";
-    label.textContent = title;
+    label.textContent = performance.title;
     elements.timeline.append(label);
 
     const row = document.createElement("div");
